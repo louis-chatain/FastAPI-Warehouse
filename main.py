@@ -41,21 +41,31 @@ class Product(HashModel):
         database = redis
 
 
+def format(pk: str):
+    product = Product.get(pk)
+    return {
+        "product_id": product.pk,
+        "product_name": product.name,
+        "product_price": product.price,
+        "product_quantity": product.quantity,
+    }
+
+
 @app.post("/product")
 def create(product: Product):
     return product.save()
 
 
-@app.get("/product/read_all_pk")
+@app.get("/product/read_all")
 def read_all():
     product = Product.all_pks()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No Product pk not found. database empty boy.")
-    return product
+    return [format(pk) for pk in product]
 
 
-@app.get("/product/read")
+@app.get("/product/{pk}")
 def read(pk: str):
     product = Product.get(pk)
     if not product:
